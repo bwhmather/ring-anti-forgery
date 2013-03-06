@@ -1,6 +1,6 @@
 # Ring-Anti-Forgery
 
-[![Build Status](https://secure.travis-ci.org/weavejester/ring-anti-forgery.png)](http://travis-ci.org/weavejester/ring-anti-forgery)
+[![Build Status](https://secure.travis-ci.org/bwhmather/ring-anti-forgery.png)](http://travis-ci.org/weavejester/ring-anti-forgery)
 
 This middleware prevents [CSRF][1] attacks by providing a randomly-generated
 anti-forgery token.
