@@ -11,12 +11,13 @@
   (get-in request [:session "__anti-forgery-token"]))
 
 (defn default-assoc-session-token [response request token]
-  (let [old-token (get-in request [:session "__anti-forgery-token"])]
-    (if (= old-token token)
-      response
-      (-> response
-          (assoc :session (:session request))
-          (assoc-in [:session "__anti-forgery-token"] token)))))
+  (if (or (not (= token (get-in request [:session "__anti-forgery-token"])))
+          (contains? response :session))
+    (-> response
+      (assoc :session (or (:session response)
+                          (:session request)))
+      (assoc-in [:session "__anti-forgery-token"] token))
+    response))
 
 (defn default-get-request-token [request]
   (or (get (:form-params request) "__anti-forgery-token")
@@ -62,7 +63,7 @@
                    get-request-token default-get-request-token}}]
   (fn [request]
     (let [session-token (or (get-session-token request)
-                             (generate-token-fn))
+                            (generate-token-fn))
           request-token (get-request-token request)]
       (or (and (post-request? request)
                (not (valid-request? request-token session-token))
