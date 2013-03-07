@@ -7,10 +7,10 @@
           in POST forms if the handler is wrapped in wrap-anti-forgery."}
   *anti-forgery-token*)
 
-(defn- get-session-token [request]
+(defn default-get-session-token [request]
   (get-in request [:session "__anti-forgery-token"]))
 
-(defn- assoc-session-token [response request token]
+(defn default-assoc-session-token [response request token]
   (let [old-token (get-in request [:session "__anti-forgery-token"])]
     (if (= old-token token)
       response
@@ -18,7 +18,7 @@
           (assoc :session (:session request))
           (assoc-in [:session "__anti-forgery-token"] token)))))
 
-(defn get-request-token [request]
+(defn default-get-request-token [request]
   (or (get (:form-params request) "__anti-forgery-token")
       (get (:multipart-params request) "__anti-forgery-token")
       (get (:headers request)"x-anti-forgery-token")))
@@ -50,9 +50,16 @@
   contain a '__anti-forgery-token' parameter equal to the last value of the
   *anti-request-forgery* var. If the token is missing or incorrect, an access-
   denied response is returned."
-  [handler & {:keys [on-potential-csrf-attack generate-token-fn]
+  [handler & {:keys [on-potential-csrf-attack
+                     generate-token-fn
+                     get-session-token
+                     assoc-session-token
+                     get-request-token]
               :or {on-potential-csrf-attack invalid-csrf-token
-                   generate-token-fn #(random/base64 60)}}]
+                   generate-token-fn #(random/base64 60)
+                   get-session-token default-get-session-token
+                   assoc-session-token default-assoc-session-token
+                   get-request-token default-get-request-token}}]
   (fn [request]
     (let [session-token (or (get-session-token request)
                              (generate-token-fn))
